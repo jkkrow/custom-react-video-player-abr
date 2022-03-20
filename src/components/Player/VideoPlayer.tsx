@@ -121,23 +121,12 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, autoPlay = true }) => {
   const videoPlayHandler = useCallback(() => {
     setPlaybackState(true);
     showControlsHandler();
-    setResolutionInterval(() => {
-      const player = shakaPlayer.current;
-      if (!player) return;
-
-      const tracks = player.getVariantTracks();
-      const sortedTracks = tracks.sort((trackA, trackB) =>
-        (trackA?.height || 0) < (trackB?.height || 0) ? -1 : 1
-      );
-      setResolutions(sortedTracks);
-    }, 5000);
-  }, [showControlsHandler, setResolutionInterval]);
+  }, [showControlsHandler]);
 
   const videoPauseHandler = useCallback(() => {
     setPlaybackState(false);
     showControlsHandler();
-    clearResolutionInterval();
-  }, [showControlsHandler, clearResolutionInterval]);
+  }, [showControlsHandler]);
 
   /**
    * LOADING
@@ -550,6 +539,24 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, autoPlay = true }) => {
   }, [src]);
 
   useEffect(() => {
+    if (activeResolutionHeight !== 'auto') {
+      clearResolutionInterval();
+      return;
+    }
+
+    setResolutionInterval(() => {
+      const player = shakaPlayer.current;
+      if (!player) return;
+
+      const tracks = player.getVariantTracks();
+      const sortedTracks = tracks.sort((trackA, trackB) =>
+        (trackA?.height || 0) < (trackB?.height || 0) ? -1 : 1
+      );
+      setResolutions(sortedTracks);
+    }, 5000);
+  }, [activeResolutionHeight, setResolutionInterval, clearResolutionInterval]);
+
+  useEffect(() => {
     return () => {
       document.removeEventListener('fullscreenchange', fullscreenChangeHandler);
       document.removeEventListener('keydown', keyEventHandler);
@@ -570,7 +577,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, autoPlay = true }) => {
     >
       <video
         ref={videoRef}
-        src={src}
         controls={false}
         onLoadedMetadata={videoLoadedHandler}
         onClick={togglePlayHandler}

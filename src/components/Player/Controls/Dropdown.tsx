@@ -162,7 +162,9 @@ const Dropdown: React.FC<DropdownProps> = ({
       ))}
       <li
         className={`vp-dropdown__item${
-          activeResolutionHeight === 'auto' ? ' active' : ''
+          activeResolutionHeight === 'auto' || !matchedResolution
+            ? ' active'
+            : ''
         }`}
         onClick={selectResolutionHandler('auto')}
       >
